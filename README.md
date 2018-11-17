@@ -1,7 +1,5 @@
-
 # Actor
-
-What can the actors? Actors can: receive messages, send messages, create new actors, and change the internal state.
+What can actors do? They can: receive messages, send messages, create new actors and change the internal state.
 
 ```haskell
 import           Universum
@@ -11,7 +9,7 @@ import           Control.Loger
 import           Control.Actor
 
 -- You can send different types of messages to actors.
--- If there is no suitable handler, then it will simply be droped.
+-- If there is no suitable handler a message will simply be dropded.
 data Ping = Ping Actor Int
 data Pong = Pong Actor Int
 
@@ -29,8 +27,8 @@ actorPingPong = do
     notify actor2 $ Ping actor1 10
     wait success
 
--- Handlers are ordinary haskel functions with strong typing.
--- Thanks to io you can enjoy all the wealth of opportunities.
+-- Handlers are ordinary Haskell functions with strong typing.
+-- Thanks to IO you can enjoy all the wealth of opportunities.
 -- For example shoot yourself in the foot ;)
 ping :: Flag -> Actor -> Ping -> IO ()
 ping sem  _    (Ping _     0) = liftFlag sem
@@ -44,10 +42,10 @@ pong _    link (Pong actor n) = notify actor $ Ping link (n-1)
 
 # FSM
 
-FSM is framework to build asynchronous FSM. What is supported?
+FSM is a framework to build asynchronous FSM. What is supported?
 
 1. Initial state, final state, transitions by events.
-2. Dynamic selection of transitions by event and current state.
+2. Dynamic selection of transitions by event and current state. 
 3. State grouping and grouping of groups.
 4. Addition transition from goup.
 5. Handlers state and groups entry/exit.
@@ -62,26 +60,19 @@ import           Control.Loger
 import           Control.StateMachine
 import           Control.StateMachine.Domain
 
-data Green       = Green
-data Yellow      = Yellow
-data Red         = Red
-data ChangeColor = ChangeColor
--- or you can write
--- makeStates ["Green", "Yellow", "Red"]
--- makeEvents ["ChangeColor"]
-
-
+makeStates ["Green", "Yellow", "Red"]
+makeEvents ["ChangeColor"]
 
 trafficLightExample :: IO StateMachine
 trafficLightExample = runStateMachine logToConsole Green $ do
     addTransition Green  ChangeColor Yellow
     addTransition Red    ChangeColor Yellow
-
+    
     -- during the construction of the FSN, you can use IO.
     directionSM <- liftIO $ runStateMachine logToConsole Red $ do
         addTransition Green  ChangeColor Red
         addTransition Red    ChangeColor Green
-
+    
     exitDo Red   $ emitAndWait directionSM ChangeColor
     exitDo Green $ emitAndWait directionSM ChangeColor
 
